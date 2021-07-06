@@ -8,24 +8,15 @@
 #'
 
 #' @rdname InternalFunctions
-tsv2rdata <- function() {
+gittsv <- function() {
 
-  source("./R/formattingDrugName.R")
-  # source("./R/downloadAbsentFile.R")
 
-  # DOWNLOAD RDATA FROM GITHUB
-  # downloadAbsentFile(dir = tempdir())
-  # dir <-  paste0(tempdir(),"\\dhdrugs.RData")
-  # dhdrugs <- load(file = dir)
-  # data("dhdrugs")
-
-  # DOWNLOADED FROM TSV
   requireNamespace("readr")
   dhdrugs <- read_delim("https://raw.githubusercontent.com/jaaaviergarcia/drughelper/main/dhdrugs.tsv",
-                            "\t", escape_double = FALSE, trim_ws = TRUE)
+                        "\t", escape_double = FALSE, trim_ws = TRUE)
 
   singleDrugSynonymsChembl<-c()
-  data("singleDrugSynonymsChembl", envir = environment())
+  load(paste0(tempdir(), "/singleDrugSynonymsChembl.rda"), envir = environment())
 
   for (i in 1:nrow(dhdrugs)){
     dhdrugs$synonyms[i] <- toupper(dhdrugs$synonyms[i])
@@ -43,8 +34,6 @@ tsv2rdata <- function() {
 
   dhdrugs <- dhdrugs[,-7]
 
-  #UNIQUE SYNONYMS
-  #vaux = vector auxiliar
   for (k in 1:nrow(dhdrugs)){
 
     vaux <- strsplit(dhdrugs$synonyms[k], ";;;")[[1]]
@@ -52,24 +41,14 @@ tsv2rdata <- function() {
     dhdrugs$synonyms[k] <- paste(vaux, collapse = ";;;")
 
   }
-
-  # A continuacion el objetivo es llamar a la funcion ya
-  # creada para que formatee la columna de sinonimos
-  # (quitar espacios y signos de puntuación)
-
-  source("../../codeJG/generateDB/formattingSynonymsTable.R")
+  source("./R/AuxFunctions.R")
   dhdrugs <- updateTable(dhdrugs)
-
-  #Introducimos otras columnas como ids u otra información:
 
   dhdrugs$DrugHelper <- paste0("DH0",1:nrow(dhdrugs))
 
-  #Ordenamos las columnas
-
   dhdrugs <- subset(dhdrugs, select = c(8,2,1,4,5,6,7,3))
 
-  # save(dhdrugs, file = "https://github.com/jaaaviergarcia/drughelper/dhdrugs2.RData")
-  # guardar esta tabla en github mediante codigo (esta guardada manualmente)
+
 }
 
 
